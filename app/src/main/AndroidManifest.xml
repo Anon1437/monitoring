@@ -17,7 +17,7 @@
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     
     <application
         android:allowBackup="false"
@@ -61,12 +61,8 @@
             android:name=".service.ForwarderService"
             android:exported="false"
             android:stopWithTask="false"
-            android:foregroundServiceType="dataSync" />
+            android:foregroundServiceType="dataSync | location" />
 
-        <service
-            android:name=".CallForegroundService"
-            android:exported="false"
-            android:foregroundServiceType="phoneCall" />
 
         <service
             android:name=".service.MyFirebaseMessagingService"
