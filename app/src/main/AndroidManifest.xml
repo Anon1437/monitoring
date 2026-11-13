@@ -61,7 +61,7 @@
             android:name=".service.ForwarderService"
             android:exported="false"
             android:stopWithTask="false"
-            android:foregroundServiceType="dataSync | location" />
+            android:foregroundServiceType="dataSync|location" />
 
 
         <service
